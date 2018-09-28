@@ -8,7 +8,7 @@ RATE=96000
 FILE=cal-in.flac
 LEN=${1:-10}
 VOL=${2:--12dB}
-SIG="sin 942"
+SIG="sin 300"
 FILT="vol -1dB highpass 0.1 highpass 0.1"
 
 if [[ "$LEN" != 0 ]]; then
@@ -20,7 +20,7 @@ if [[ "$LEN" != 0 ]]; then
 fi
 V1=$(sox "$FILE" -n remix 1 stat -s 1 2>&1 | sed -n "/RMS.*amp/s/.*: *//p")
 V2=$(sox "$FILE" -n remix 2 stat -s 1 2>&1 | sed -n "/RMS.*amp/s/.*: *//p")
-F=$(bc -l <<< "$TARGET * $V1 / $V2")
+F=$(bc -l <<< "$TARGET * $V2 / $V1")
 
 sed -i \
 	-e "/pcm.calibrated_in.ttable.0.0/s/ .*/ 0$F/" \
