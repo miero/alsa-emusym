@@ -1,0 +1,66 @@
+pcm.symmetric_hw
+{
+	type hw
+	card 0
+	device 0
+}
+
+pcm.calibrated_in {
+	type route
+	slave.pcm symmetric_hw
+	slave.channels 2
+	hint.description "Calibrated Input"
+}
+
+pcm.calibrated_in.ttable.0.0 0.49
+pcm.calibrated_in.ttable.1.1 0.49
+
+pcm.calibrated_out {
+	type route
+	slave.pcm symmetric_hw
+	slave.channels 2
+	hint.description "Calibrated Output"
+}
+
+pcm.calibrated_out.ttable.0.0 0.98
+pcm.calibrated_out.ttable.1.1 0.98
+
+pcm.symmetric_in {
+	type route
+	slave.pcm calibrated_in
+	slave.channels 2
+	ttable {
+		0.0=1
+		0.1=-1
+		1.0=1
+		1.1=-1
+	}
+	hint.description "Emulated Symmetric Input"
+}
+
+pcm.symmetric_out {
+	type route
+	slave.pcm calibrated_out
+	slave.channels 2
+	ttable {
+		0.0=1
+		0.1=-1
+	}
+	hint.description "Emulated Symmetric Output"
+}
+
+pcm.symmetric
+{
+	type asym
+	playback.pcm
+	{
+		type plug
+		slave.pcm "symmetric_out"
+	}
+	capture.pcm
+	{
+		type plug
+		slave.pcm "symmetric_in"
+	}
+	hint.description "Emulated Symmetric I/O"
+}

@@ -1,0 +1,29 @@
+#!/bin/bash -eu
+
+export AUDIODRIVER=alsa
+export AUDIODEV=hw:0,0
+
+TARGET=0.98
+RATE=96000
+FILE=cal-out.flac
+LEN=${1:-10}
+VOL=${2:--12dB}
+SIG="sin 942"
+FILT="vol -1dB highpass 0.1 highpass 0.1"
+
+if [[ "$LEN" != 0 ]]; then
+	pasuspender sleep $((LEN+3)) || err=$? &
+	AUDIODEV=calibrated_in sox -R -r $RATE -b 32 -c 2 -d "$FILE" $FILT trim 1 $LEN &
+	sleep 0.5
+	play -q -R -r $RATE -b 32 -c 1 -n synth $((LEN+2)) $SIG vol $VOL channels 2
+	wait
+fi
+V1=$(sox "$FILE" -n remix 1 stat -s 1 2>&1 | sed -n "/RMS.*amp/s/.*: *//p")
+V2=$(sox "$FILE" -n remix 2 stat -s 1 2>&1 | sed -n "/RMS.*amp/s/.*: *//p")
+F=$(bc -l <<< "$TARGET * $V1 / $V2")
+
+sed -i \
+	-e "/pcm.calibrated_out.ttable.0.0/s/ .*/ 0$F/" \
+	-e "/pcm.calibrated_out.ttable.1.1/s/ .*/ $TARGET/" \
+	~/.asoundrc
+grep pcm.calibrated_out.ttable ~/.asoundrc
