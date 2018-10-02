@@ -27,3 +27,6 @@ sed -i \
 	-e "/pcm.calibrated_out.ttable.1.1/s/ .*/ $TARGET/" \
 	~/.asoundrc
 grep pcm.calibrated_out.ttable ~/.asoundrc
+
+# trigger .asoundrc reload on the next open of device
+sudo touch /usr/share/alsa/alsa.conf
